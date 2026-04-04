@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happy Birthday Vanilla 💜</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #1a0a2e;
+      color: #f0eaff;
+    }
+
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --lavender: #c8a8e9;
+      --deep-purple: #1a0a2e;
+      --mid-purple: #3d1a6e;
+      --soft-lilac: #e8d5f5;
+      --blush: #f5e6ff;
+      --glow: rgba(200, 168, 233, 0.4);
+    }
+
+    /* ===== PAGES ===== */
+    .page {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.9s ease, transform 0.9s ease;
+      transform: scale(0.97);
+      overflow-y: auto;
+    }
+    .page.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: scale(1);
+    }
+
+    /* ===== SPARKLES CANVAS ===== */
+    #sparkle-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== GRADIENT BACKGROUNDS ===== */
+    .bg-land {
+      background: radial-gradient(ellipse at 30% 20%, #3d1a6e 0%, #1a0a2e 50%, #0d0520 100%);
+    }
+    .bg-msg {
+      background: radial-gradient(ellipse at 70% 30%, #2d1059 0%, #1a0a2e 60%, #0d0520 100%);
+    }
+    .bg-mem {
+      background: radial-gradient(ellipse at 50% 50%, #1e0b38 0%, #0d0520 100%);
+    }
+    .bg-vid {
+      background: radial-gradient(ellipse at 50% 40%, #2d1059 0%, #0d0520 100%);
+    }
+
+    /* ===== LANDING PAGE ===== */
+    #page-landing {
+      z-index: 10;
+      text-align: center;
+      padding: 2rem;
+    }
+    .landing-emoji {
+      font-size: 3rem;
+      animation: float 3s ease-in-out infinite;
+      display: block;
+      margin-bottom: 1.5rem;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .landing-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--soft-lilac);
+      letter-spacing: 0.03em;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 40px var(--glow);
+    }
+    .landing-sub {
+      font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+      color: var(--lavender);
+      opacity: 0.8;
+      margin-bottom: 3rem;
+      font-weight: 300;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-glow {
+      display: inline-block;
+      padding: 0.85rem 2.5rem;
+      border-radius: 50px;
+      border: 1.5px solid rgba(200, 168, 233, 0.5);
+      background: rgba(61, 26, 110, 0.4);
+      color: var(--soft-lilac);
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      backdrop-filter: blur(10px);
+      transition: all 0.35s ease;
+      box-shadow: 0 0 20px rgba(200,168,233,0.2), inset 0 0 20px rgba(200,168,233,0.05);
+      text-decoration: none;
+    }
+    .btn-glow:hover {
+      background: rgba(61, 26, 110, 0.7);
+      box-shadow: 0 0 40px rgba(200,168,233,0.5), 0 0 80px rgba(200,168,233,0.2);
+      border-color: var(--lavender);
+      transform: translateY(-2px);
+    }
+    .btn-glow:active { transform: translateY(0); }
+
+    /* ===== MESSAGE PAGE ===== */
+    #page-message {
+      z-index: 9;
+      padding: 3rem 1.5rem;
+      justify-content: flex-start;
+    }
+    .msg-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-top: 2rem;
+    }
+    .msg-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--soft-lilac);
+      text-shadow: 0 0 30px var(--glow);
+      line-height: 1.2;
+    }
+    .msg-divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--lavender), transparent);
+      margin: 1.2rem auto;
+    }
+    .msg-body {
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,168,233,0.15);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      backdrop-filter: blur(8px);
+      line-height: 1.95;
+      font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+      color: rgba(240, 234, 255, 0.88);
+      font-weight: 300;
+    }
+    .msg-body p { margin-bottom: 1.2rem; }
+    .msg-body p:last-child { margin-bottom: 0; }
+    .msg-sign {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      color: var(--lavender);
+      font-size: 1.2rem;
+      margin-top: 1.5rem;
+    }
+    .msg-footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      padding-bottom: 3rem;
+    }
+
+    /* ===== MEMORIES PAGE ===== */
+    #page-memories {
+      z-index: 8;
+      padding: 1.5rem;
+    }
+    .mem-counter {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      font-size: 0.8rem;
+      color: rgba(200,168,233,0.5);
+      letter-spacing: 0.1em;
+    }
+    .mem-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      color: var(--lavender);
+      opacity: 0.7;
+      margin-bottom: 1.2rem;
+      font-weight: 300;
+    }
+    .mem-image-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 60px rgba(0,0,0,0.5), 0 0 30px rgba(200,168,233,0.1);
+      border: 1px solid rgba(200,168,233,0.15);
+    }
+    .mem-image-wrap img {
+      width: 100%;
+      max-height: 55vh;
+      object-fit: cover;
+      display: block;
+      border-radius: 16px;
+      transition: opacity 0.5s ease;
+    }
+    .mem-caption {
+      max-width: 420px;
+      width: 100%;
+      margin-top: 1rem;
+      padding: 1rem 1.2rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,168,233,0.15);
+      border-radius: 12px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: rgba(232,213,245,0.85);
+      font-weight: 300;
+      font-style: italic;
+      text-align: center;
+      transition: opacity 0.4s ease;
+    }
+    .mem-caption.hidden { display: none; }
+    .mem-nav {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.2rem;
+      align-items: center;
+    }
+    .btn-nav {
+      padding: 0.6rem 1.5rem;
+      border-radius: 50px;
+      border: 1px solid rgba(200,168,233,0.35);
+      background: rgba(61,26,110,0.3);
+      color: var(--lavender);
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+    }
+    .btn-nav:hover {
+      background: rgba(61,26,110,0.6);
+      border-color: var(--lavender);
+      box-shadow: 0 0 20px rgba(200,168,233,0.3);
+    }
+    .btn-nav:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+
+    /* Dots */
+    .mem-dots {
+      display: flex;
+      gap: 6px;
+      margin-top: 0.8rem;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(200,168,233,0.25);
+      transition: all 0.3s ease;
+    }
+    .dot.active { background: var(--lavender); transform: scale(1.3); }
+
+    /* ===== VIDEO PAGE ===== */
+    #page-video {
+      z-index: 7;
+      text-align: center;
+      padding: 2rem 1.5rem;
+    }
+    .vid-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      color: var(--soft-lilac);
+      margin-bottom: 0.5rem;
+      font-weight: 300;
+    }
+    .vid-sub {
+      font-size: 0.85rem;
+      color: rgba(200,168,233,0.6);
+      margin-bottom: 1.5rem;
+      font-weight: 300;
+    }
+    .vid-wrap {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(200,168,233,0.2);
+      box-shadow: 0 10px 60px rgba(0,0,0,0.6), 0 0 40px rgba(200,168,233,0.1);
+      margin: 0 auto;
+    }
+    .vid-wrap video {
+      width: 100%;
+      display: block;
+      border-radius: 18px;
+    }
+    .vid-caption-text {
+      margin-top: 1.5rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--lavender);
+      opacity: 0.8;
+    }
+    .vid-caption-sub {
+      margin-top: 0.4rem;
+      font-size: 0.82rem;
+      color: rgba(200,168,233,0.5);
+      font-weight: 300;
+    }
+
+    /* ===== FADE TRANSITION ===== */
+    .fade-img {
+      animation: fadeImg 0.5s ease forwards;
+    }
+    @keyframes fadeImg {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== SCROLL inside message page ===== */
+    #page-message {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #page-memories {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #page-video {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-height: 700px) {
+      .mem-image-wrap img { max-height: 45vh; }
+      .msg-body { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sparkle canvas (runs across all pages) -->
+<canvas id="sparkle-canvas"></canvas>
+
+<!-- ======================= PAGE 1: LANDING ======================= -->
+<section id="page-landing" class="page bg-land active">
+  <span class="landing-emoji">💜</span>
+  <h1 class="landing-title">Hey you…</h1>
+  <p class="landing-sub">Ready for your surprise?</p>
+  <button class="btn-glow" onclick="goTo('page-message')">Click here to continue 🎁</button>
+</section>
+
+<!-- ======================= PAGE 2: MESSAGE ======================= -->
+<section id="page-message" class="page bg-msg">
+  <div class="msg-header">
+    <h2 class="msg-title">A little note from the heart 💜</h2>
+    <div class="msg-divider"></div>
+  </div>
+
+  <!-- ============ BIRTHDAY MESSAGE — EDIT BELOW ============ -->
+  <div class="msg-body">
+    <p>Happpyyy Birthdayyyyyy <strong style="color:var(--lavender)">Vanilllllaaaaaa</strong><br>
+    the MOST Precious Person for me in SIDTM ❤️❤️</p>
+
+    <p>Wishing you loads and loads of happiness!! May God always bless you and may you achieve all your dreams and aspirations!!</p>
+
+    <p>On this special day, I want to say that, even though you are far from me, I want you to know you are very very close to my heart no matter what the physical distance between us is. You mean a lot to me, much much more than you can imagine and I do not have words to express how I feel for you. Just know that, You Vanilla, are very important for me. I adore you very much and cherish each and every moment that I have made with you.</p>
+
+    <p>The most favourite memory of mine with you is the bus trip to Mumbai!! God how cute you look when you are sleeping 😭😭 you really are my sweet Lilliput. The next favourite memory is us going out to have Chinese — remember? Then completing the day with Tiramisu! Tbh, it is never about where we go and what we eat, the only thing that matters to me is you being there ❤️</p>
+
+    <p>I am probably the only person who has hurt you so many times and you yourself has told me I have made you cry the most. Uske liye I am deeply, very very sorry for being such a jerk and trust me, mene dil se tumko hurt karne ka kabhi nehi chaha. I am very childish and stupid and I react in ways that I should not. In the process, I hurt the ones I really care about. I can just ask for forgiveness from you. I promise you I will never ever hurt you in any way in the future and change your perspective about me that "I will never be able to deal with/ handle you".</p>
+
+    <p>I still want to be that person jisko tum apna comfort person bol sako and I know I am responsible for ruining it. I want to be the person jisse tum expectations rakh sako to be honest. I know you don't have any from me. I will never ever leave you, I will keep trying my best to become the person you can be proud of!!</p>
+
+    <p>Its a special day for you, I maybe asking you a lot, but please, <em>Please</em> forgive me for all the wrongs I have done to you. I am childish, stupid, a jerk, immature — jo bhi hai I accept it all. BUT YOU ARE THE ONLY PERSON whom I WANT TO TAKE CARE OF, and I will keep on taking care of my sweet little Liliput Vanillaa no matter what. I just cannot let you go 😌</p>
+
+    <p>Happy Happyyyy Birthdayyyyyyyy once again ❤️❤️</p>
+    <p class="msg-sign">With Love,<br>DUMBASS Chandrav 💜</p>
+  </div>
+  <!-- ============ END OF MESSAGE ============ -->
+
+  <div class="msg-footer">
+    <button class="btn-glow" onclick="goTo('page-memories')">Relive Our Memories ✨</button>
+  </div>
+</section>
+
+<!-- ======================= PAGE 3: MEMORIES ======================= -->
+<section id="page-memories" class="page bg-mem">
+  <div class="mem-counter" id="mem-counter">1 / 12</div>
+  <p class="mem-title">our story, one frame at a time</p>
+
+  <div class="mem-image-wrap">
+    <img id="mem-img" src="" alt="Memory" />
+  </div>
+
+  <!-- Caption (only shown for images 8–12) -->
+  <div class="mem-caption hidden" id="mem-caption"></div>
+
+  <div class="mem-nav">
+    <button class="btn-nav" id="btn-prev" onclick="changeImage(-1)">⬅️ Previous</button>
+    <button class="btn-nav" id="btn-next" onclick="changeImage(1)">Next ➡️</button>
+  </div>
+
+  <div class="mem-dots" id="mem-dots"></div>
+</section>
+
+<!-- ======================= PAGE 4: VIDEO ======================= -->
+<section id="page-video" class="page bg-vid">
+  <h2 class="vid-title">One Last Surprise 🎥</h2>
+  <p class="vid-sub">just for you, Vanilla 💜</p>
+
+  <div class="vid-wrap">
+    <!-- VIDEO FILE: video1.mp4 from uploads -->
+    <video id="main-video" controls playsinline autoplay muted loop>
+      <source src="video1.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <!-- Video caption from user -->
+  <p class="vid-caption-text">Choti si koshish to bring a smile on your face.</p>
+  <p class="vid-caption-sub">Made with love 💜 — I hope you like it ❤</p>
+</section>
+
+<script>
+  /* ================================================
+     IMAGE SEQUENCE — all 12 uploaded images in order
+     ================================================ */
+  const images = [
+    'image1.jpg',
+    'image2.jpg',
+    'image3.jpg',
+    'image4.jpg',
+    'image5.jpg',
+    'image6.jpg',
+    'image7.jpg',
+    'image8.jpg',
+    'image9.jpg',
+    'image10.jpg',
+    'image11.jpg',
+    'image12.jpg',
+  ];
+
+  /* ================================================
+     CAPTIONS — ONLY for images index 7–11 (image8–image12)
+     ================================================ */
+  const captions = {
+    7: "For me, the best manager-owner duo and I was very proud of you taking up this role. It was a great learning experience for both of us and I am glad, you were the owner I signed up with.",
+    8: "what would DUMBO Vanilla and DUMBASS Chandrav be without small nok-jhok? Trust me on this!! Tumko manane mei jo satisfaction aata hai that is an \"out of the world\" feeling for me 💜💜",
+    9: "Donkey, Monkey and Vanilla trio is INCOMPLETE without VANILLAAAA!! YOU MEAN A LOT TO BOTH AUNINN AND ME!!!",
+    10: "No matter what, I will always lookout for you wherever you are and whenever you need me. This picture means a lot to me, for me, it signifies no matter which situation we are in, we will always be there for each other, be it good days or dark ones.",
+    11: "And this, this is my favourite picture of all times sharing my favourite memory with the only person whom I care about so much.",
+  };
+
+  /* =================== PAGE NAVIGATION =================== */
+  function goTo(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    if (pageId === 'page-video') {
+      const v = document.getElementById('main-video');
+      v.muted = false;
+      v.play().catch(() => {});
+    }
+  }
+
+  /* =================== MEMORIES LOGIC =================== */
+  let current = 0;
+
+  function buildDots() {
+    const wrap = document.getElementById('mem-dots');
+    wrap.innerHTML = '';
+    images.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      wrap.appendChild(d);
+    });
+  }
+
+  function updateDots() {
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  function renderImage(idx) {
+    const img = document.getElementById('mem-img');
+    const cap = document.getElementById('mem-caption');
+    const counter = document.getElementById('mem-counter');
+    const btnNext = document.getElementById('btn-next');
+    const btnPrev = document.getElementById('btn-prev');
+
+    // Fade out
+    img.style.opacity = 0;
+    setTimeout(() => {
+      img.src = images[idx];
+      img.classList.remove('fade-img');
+      void img.offsetWidth;
+      img.classList.add('fade-img');
+      img.style.opacity = 1;
+    }, 250);
+
+    // Caption logic: only for indices 7–11 (image8–image12)
+    if (captions[idx] !== undefined) {
+      cap.textContent = captions[idx];
+      cap.classList.remove('hidden');
+    } else {
+      cap.classList.add('hidden');
+      cap.textContent = '';
+    }
+
+    // Counter
+    counter.textContent = `${idx + 1} / ${images.length}`;
+
+    // Prev button
+    btnPrev.disabled = idx === 0;
+
+    // Next button — last image shows video CTA
+    if (idx === images.length - 1) {
+      btnNext.textContent = 'One Last Surprise 🎥';
+      btnNext.onclick = () => goTo('page-video');
+    } else {
+      btnNext.textContent = 'Next ➡️';
+      btnNext.onclick = () => changeImage(1);
+    }
+
+    updateDots();
+  }
+
+  function changeImage(dir) {
+    const next = current + dir;
+    if (next < 0 || next >= images.length) return;
+    current = next;
+    renderImage(current);
+  }
+
+  // Init memories page
+  buildDots();
+  renderImage(0);
+
+  /* =================== SPARKLES =================== */
+  const canvas = document.getElementById('sparkle-canvas');
+  const ctx = canvas.getContext('2d');
+  let sparkles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function createSparkle() {
+    return {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.8 + 0.4,
+      alpha: Math.random(),
+      speed: Math.random() * 0.008 + 0.003,
+      phase: Math.random() * Math.PI * 2,
+    };
+  }
+
+  for (let i = 0; i < 90; i++) sparkles.push(createSparkle());
+
+  function animateSparkles(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sparkles.forEach(s => {
+      s.phase += s.speed;
+      const a = (Math.sin(s.phase) + 1) / 2 * 0.7;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200, 168, 233, ${a})`;
+      ctx.fill();
+      // subtle drift
+      s.y -= 0.12;
+      if (s.y < -5) { s.y = canvas.height + 5; s.x = Math.random() * canvas.width; }
+    });
+    requestAnimationFrame(animateSparkles);
+  }
+  requestAnimationFrame(animateSparkles);
+</script>
+</body>
+</html>
